@@ -1,35 +1,52 @@
+import clsx from "clsx";
+import { getFarewellText } from "../utils";
+import { languages } from "../languages";
 import type { JSX } from "react";
 
-type AriaLive = {
-  currentWord: string;
-  lastGuessedLetter: string;
-  guessedLetters: string[];
-  numGuessesLeft: number;
+type GameStatusProps = {
+  isGameWon: boolean;
+  isGameLost: boolean;
+  isGameOver: boolean;
+  isLastGuessIncorrect: boolean;
+  wrongGuessCount: number;
 };
 
-export default function AriaLiveStatus({
-  currentWord,
-  lastGuessedLetter,
-  guessedLetters,
-  numGuessesLeft,
-}: AriaLive): JSX.Element {
+export default function GameStatus({
+  isGameWon,
+  isGameLost,
+  isGameOver,
+  isLastGuessIncorrect,
+  wrongGuessCount,
+}: GameStatusProps): JSX.Element {
+  const gameStatusClass: string = clsx("game-status", {
+    won: isGameWon,
+    lost: isGameLost,
+    farewell: !isGameOver && isLastGuessIncorrect,
+  });
+
   return (
-    <section className="sr-only" aria-live="polite" role="status">
-      <p>
-        {currentWord.includes(lastGuessedLetter)
-          ? `Correct! The letter ${lastGuessedLetter} is in the word.`
-          : `Sorry, the letter ${lastGuessedLetter} is not in the word.`}
-        You have {numGuessesLeft} attempts left.
-      </p>
-      <p>
-        Current word:{" "}
-        {currentWord
-          .split("")
-          .map((letter: string): string =>
-            guessedLetters.includes(letter) ? letter + "." : "blank."
-          )
-          .join(" ")}
-      </p>
+    <section aria-live="polite" role="status" className={gameStatusClass}>
+      {!isGameOver && isLastGuessIncorrect && (
+        <p className="farewell-message">
+          {getFarewellText(languages[wrongGuessCount - 1].name)}
+        </p>
+      )}
+
+      {isGameWon && (
+        <>
+          <h2>You win!</h2>
+          <p>Well done! 🎉</p>
+        </>
+      )}
+
+      {isGameLost && (
+        <>
+          <h2>Game over!</h2>
+          <p>You lose! Better start learning Assembly 😭</p>
+        </>
+      )}
+
+      {/* If none of the above conditions met, render nothing inside but keep the section */}
     </section>
   );
 }
